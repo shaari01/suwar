@@ -62,6 +62,7 @@ async function fixture(page, kind, w = 800, h = 600) {
   return p;
 }
 
+try { (await import('node:child_process')).execSync('pkill -f "vite preview"'); } catch {}
 const server = await startServer();
 const browser = await chromium.launch();
 let failed = 0;

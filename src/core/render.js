@@ -6,7 +6,11 @@ import { blendToComposite, layerMatrix, getLayer } from './doc.js';
 import { rasterId } from './util.js';
 
 /** خطوات إضافية تسجّلها المراحل اللاحقة */
-export const layerSteps = []; // [{ name, key(l)=>string|null, run(canvas, l, ctx)=>canvas }]
+export const layerSteps = []; // [{ name, order, key(l)=>string|null, run(canvas, l, ctx)=>canvas }]
+export function registerStep(s) {
+  layerSteps.push(s);
+  layerSteps.sort((a, b) => (a.order || 0) - (b.order || 0));
+}
 export const docSpaceEffects = []; // [{ name, applies(l), run(layerDocCanvas, backdrop, l, scale)=>canvas }]
 export const adjusters = {}; // kind -> (canvas, params, doc, scale) => canvas
 export const shadowRenderer = { fn: null }; // (shadowLayer, refLayer, processed, doc, scale) => canvas
