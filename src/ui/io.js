@@ -133,6 +133,7 @@ export async function newDocDialog(app) {
   const doc = createDoc({ width: W, height: H, name: name.value || 'لوحة جديدة' });
   doc.untouched = preset === 'auto';
   app.setDoc(doc);
+  await app.saveNow();
 }
 
 // ---------- المشاريع ----------
