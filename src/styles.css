@@ -206,3 +206,9 @@ input[type=color] { width: 100%; height: 46px; border: 1px solid var(--line); bo
 .lib-name { padding: 6px 8px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: start; }
 .lib-more { position: absolute; top: 2px; left: 2px; background: rgba(0,0,0,.55); }
 .lib-panel > .hint { padding: 0 10px 8px; }
+
+/* الانسجام */
+.sub-h { display: flex; align-items: center; gap: 6px; margin: 12px 0 2px; font-size: 15px; color: var(--accent); }
+.dial-row { display: flex; gap: 10px; align-items: center; }
+.dial { flex-shrink: 0; cursor: grab; border-radius: 50%; background: #191b21; }
+.psec-body > div > .ibtn { background: var(--panel2); width: 100%; flex-direction: row; gap: 8px; justify-content: flex-start; padding-inline: 14px; font-size: 14px; }
