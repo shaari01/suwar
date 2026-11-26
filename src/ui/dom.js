@@ -29,28 +29,22 @@ export function iconBtn(name, label, onClick, { cls = '', title, showLabel = tru
   );
 }
 
-/** منزلق بقيمة ظاهرة */
+/** منزلق بقيمة ظاهرة.
+ * باللمس: لا يتغير بمجرد مرور الإصبع أثناء تمرير القائمة. يتغير فقط بسحب أفقي واضح،
+ * ويتحرك نسبيًا من قيمته الحالية (لا يقفز إلى مكان الإصبع)، بدقة أعلى من المنزلق العادي. */
 export function slider({ label, min = 0, max = 100, step = 1, value = 0, onInput, onStart, onChange, unit = '', testid, fmt }) {
   const out = h('output', { class: 'sval' }, fmt ? fmt(value) : value + unit);
   const inp = h('input', { type: 'range', min, max, step, value, 'data-testid': testid, 'aria-label': label });
   let started = false;
-  inp.addEventListener('pointerdown', () => {
+  const begin = () => {
     if (!started) {
       started = true;
       onStart && onStart();
     }
-  });
-  inp.addEventListener('keydown', () => {
-    if (!started) {
-      started = true;
-      onStart && onStart();
-    }
-  });
+  };
+  inp.addEventListener('keydown', begin);
   inp.addEventListener('input', () => {
-    if (!started) {
-      started = true;
-      onStart && onStart();
-    }
+    begin();
     const v = parseFloat(inp.value);
     out.textContent = fmt ? fmt(v) : v + unit;
     onInput && onInput(v);
@@ -59,7 +53,62 @@ export function slider({ label, min = 0, max = 100, step = 1, value = 0, onInput
     started = false;
     onChange && onChange(parseFloat(inp.value));
   });
-  const wrap = h('label', { class: 'slider' }, h('span', { class: 'slbl' }, label), out, inp);
+  // طبقة لمس فوق المنزلق: تسمح بالتمرير العمودي، وتلتقط السحب الأفقي فقط
+  const pad = h('div', { class: 'sl-touch' });
+  let g = null;
+  const setVal = (v) => {
+    const st = parseFloat(inp.step) || 1;
+    v = Math.min(+inp.max, Math.max(+inp.min, Math.round(v / st) * st));
+    if (v === parseFloat(inp.value)) return;
+    inp.value = String(+v.toFixed(4));
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  pad.addEventListener('pointerdown', (e) => {
+    if (e.button > 0) return;
+    g = { id: e.pointerId, x: e.clientX, y: e.clientY, v0: parseFloat(inp.value), on: false, touch: e.pointerType !== 'mouse' };
+    if (!g.touch) {
+      // بالفأرة: سحب مباشر من القيمة الحالية
+      g.on = true;
+      pad.setPointerCapture(e.pointerId);
+      begin();
+    }
+  });
+  pad.addEventListener('pointermove', (e) => {
+    if (!g || e.pointerId !== g.id) return;
+    const dx = e.clientX - g.x;
+    const dy = e.clientY - g.y;
+    if (!g.on) {
+      if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { g = null; return; } // تمرير، لا تعديل
+      if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      g.on = true;
+      g.x = e.clientX;
+      pad.setPointerCapture(e.pointerId);
+      begin();
+      return;
+    }
+    e.preventDefault();
+    const w = inp.getBoundingClientRect().width || 200;
+    const rtl = getComputedStyle(inp).direction === 'rtl';
+    // نسبي من القيمة عند بدء السحب؛ عرض المنزلق ونصف = المدى كله، فالتحكم أدق
+    setVal(g.v0 + ((rtl ? -dx : dx) / (w * 1.5)) * (+inp.max - +inp.min));
+  });
+  const end = (e) => {
+    if (!g || e.pointerId !== g.id) return;
+    const was = g.on;
+    g = null;
+    if (was) inp.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+  pad.addEventListener('pointerup', end);
+  pad.addEventListener('pointercancel', end);
+  // لمستان سريعتان على المنزلق تعيدانه لقيمته الأولى
+  const initial = value;
+  pad.addEventListener('dblclick', () => {
+    begin();
+    setVal(initial);
+    inp.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  const track = h('div', { class: 'sl-track' }, inp, pad);
+  const wrap = h('div', { class: 'slider' }, h('span', { class: 'slbl' }, label), out, track);
   wrap.set = (v) => {
     inp.value = v;
     out.textContent = fmt ? fmt(v) : v + unit;

@@ -29,7 +29,9 @@ const lum = (p) => p[0] + p[1] + p[2];
 async function setup(page, fixture) {
   await importVia(page, [await fixture('blemish', 400, 300)]);
   await page.getByTestId('tool-retouch').click();
-  await page.getByTestId('retouch-size').fill('70');
+  // حجم الفرشاة بالبكسل على الشاشة: نثبّته نحو 39 بكسلًا من الصورة مهما كان التكبير
+  const z = await page.evaluate(() => __app.viewport.zoom);
+  await page.getByTestId('retouch-size').fill(String(Math.round(39 * z)));
   await page.getByTestId('retouch-size').dispatchEvent('input');
 }
 

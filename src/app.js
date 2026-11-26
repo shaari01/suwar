@@ -19,6 +19,10 @@ class Emitter {
   }
 }
 
+
+// تعديلات لا تحتاج معاينة واعتمادًا (تنظيم وتحريك، لا تأثير على شكل الصورة)
+const NO_REVIEW = new Set(['نقل', 'تدوير', 'تحجيم', 'نسخ الطبقة', 'حذف الطبقة', 'نقل الطبقة', 'ترتيب الطبقة', 'تجميع', 'فك التجميع', 'إعادة تسمية', 'إخفاء', 'إظهار', 'قفل', 'فك القفل', 'استيراد صورة', 'طبقة فارغة', 'إضافة عنصر', 'تعطيل القناع', 'تفعيل القناع', 'دمج مع الأسفل', 'تسطيح الطبقة', 'تسطيح الكل']);
+
 export class App extends Emitter {
   constructor() {
     super();
@@ -41,6 +45,8 @@ export class App extends Emitter {
   // ---------- المستند ----------
   setDoc(doc, { resetHistory = true } = {}) {
     this.doc = doc;
+    this.review = null;
+    this.emit('review');
     this.renderer.invalidate();
     if (resetHistory) this.history.clear();
     this.updatePreviewScale();
@@ -57,7 +63,35 @@ export class App extends Emitter {
 
   /** نقطة حفظ للتراجع قبل أي تغيير */
   checkpoint(label) {
+    // بداية «معاينة»: كل تعديل تأثيري يظهر مباشرة، ويبقى معلقًا حتى ✓ اعتماد أو ✗ إلغاء
+    if (!this.review && !NO_REVIEW.has(label)) {
+      this.review = { base: this.history.undoStack.length, label };
+      this.emit('review');
+    } else if (this.review) {
+      this.review.label = label;
+      this.emit('review');
+    }
     this.history.checkpoint(this.doc, label);
+  }
+
+  /** ✓ اعتماد ما في المعاينة (يبقى قابلًا للتراجع) */
+  acceptReview() {
+    if (!this.review) return;
+    this.review = null;
+    this.emit('review');
+  }
+
+  /** ✗ إلغاء كل ما تغيّر منذ بدء المعاينة */
+  cancelReview() {
+    const r = this.review;
+    if (!r) return;
+    this.review = null;
+    let s = null;
+    while (this.history.undoStack.length > r.base) s = this.history.undo(this.doc) || s;
+    this.history.redoStack.length = 0;
+    this.history.emit();
+    if (s) this.restore(s);
+    this.emit('review');
   }
 
   /** تغيير مع نقطة تراجع: app.edit('اسم', () => {...}) */
@@ -82,6 +116,10 @@ export class App extends Emitter {
   undo() {
     const s = this.history.undo(this.doc);
     if (s) this.restore(s);
+    if (this.review && this.history.undoStack.length <= this.review.base) {
+      this.review = null;
+      this.emit('review');
+    }
   }
 
   redo() {
@@ -103,6 +141,7 @@ export class App extends Emitter {
   }
 
   select(id) {
+    if (id !== this.doc.selectedId) this.acceptReview();
     this.doc.selectedId = id;
     this.emit('select');
     this.emit('layers');
@@ -142,6 +181,7 @@ export class App extends Emitter {
 
   setTool(name) {
     if (!this.tools[name]) return;
+    if (name !== this.toolName) this.acceptReview();
     const prev = this.tools[this.toolName];
     if (prev?.deactivate) prev.deactivate();
     this.toolName = name;

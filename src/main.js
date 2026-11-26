@@ -60,7 +60,26 @@ async function boot() {
     iconBtn('zoomIn', 'تكبير', () => app.viewport.setZoom(app.viewport.zoom * 1.25), { showLabel: false }),
     iconBtn('fit', 'ملاءمة', () => app.viewport.fit(), { showLabel: false })
   );
-  stage.append(optBar, viewHost, zoomBar);
+  // شريط المعاينة: يظهر بعد أي تعديل تأثيري، ✓ يعتمد و✗ يلغي (مثل VivaVideo)
+  const reviewLbl = h('span', { class: 'rv-lbl' });
+  const reviewBar = h('div', { class: 'reviewbar', 'data-testid': 'reviewbar', hidden: true },
+    h('button', { type: 'button', class: 'rv-btn rv-cancel', 'aria-label': 'إلغاء', title: 'إلغاء التعديل', 'data-testid': 'review-cancel' }, icon('x', 22)),
+    reviewLbl,
+    h('button', { type: 'button', class: 'rv-btn rv-ok', 'aria-label': 'اعتماد', title: 'اعتماد التعديل', 'data-testid': 'review-ok' }, icon('check', 22)));
+  // يستجيب عند رفع الإصبع مباشرة (أسرع من click، ولا يضيع بعد سحب منزلق)
+  for (const b of reviewBar.querySelectorAll('.rv-btn')) {
+    const act = b.classList.contains('rv-ok') ? () => app.acceptReview() : () => app.cancelReview();
+    let downOn = false;
+    b.addEventListener('pointerdown', () => (downOn = true));
+    b.addEventListener('pointerup', () => { if (downOn) { downOn = false; act(); } });
+    b.addEventListener('pointerleave', () => (downOn = false));
+    b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
+  }
+  app.on('review', () => {
+    reviewBar.hidden = !app.review;
+    if (app.review) reviewLbl.textContent = 'معاينة: ' + app.review.label;
+  });
+  stage.append(optBar, viewHost, reviewBar, zoomBar);
 
   const side = h('aside', { class: 'side', 'data-testid': 'side' });
   const tabsBar = h('div', { class: 'tabs', role: 'tablist' });
