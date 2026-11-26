@@ -8,7 +8,8 @@ import {
   ChevronUp, ArrowUp, ArrowDown, Image as ImageIcon, Palette, Cloud, Search, Star, Info, RotateCcw,
   FlipHorizontal2, Crop, Blend, Moon, Lasso, Paintbrush, Circle, Square, Tag, Upload, Share2, Film,
   CircleHelp, Aperture, Shapes, Group, Ungroup, Layers2, Focus, Waves, ScanLine, BoxSelect, Footprints,
-  PersonStanding, SunMedium, Eraser as EraserIcon, LayoutGrid, MoreVertical, Smartphone, Monitor
+  PersonStanding, SunMedium, Eraser as EraserIcon, LayoutGrid, MoreVertical, Smartphone, Monitor,
+  Type, Minus, Sticker, FileType, Package
 } from 'lucide';
 
 const MAP = {
@@ -25,7 +26,7 @@ const MAP = {
   help: CircleHelp, aperture: Aperture, shapes: Shapes, groupIcon: Group, ungroup: Ungroup, layers2: Layers2,
   focus: Focus, waves: Waves, scan: ScanLine, boxSelect: BoxSelect, footprints: Footprints,
   person: PersonStanding, sunMedium: SunMedium, erase: EraserIcon, gridLayout: LayoutGrid, more: MoreVertical,
-  phone: Smartphone, monitor: Monitor
+  phone: Smartphone, monitor: Monitor, type: Type, minus: Minus, sticker: Sticker, font: FileType, package: Package
 };
 
 export function icon(name, size = 26) {

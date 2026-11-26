@@ -5,4 +5,5 @@ import harmony from './features/harmony.js';
 import repair from './features/repair.js';
 import adjustments from './features/adjustments.js';
 import exchange from './features/exchange.js';
-export const features = [cutout, library, harmony, repair, adjustments, exchange];
+import assets from './features/assets.js';
+export const features = [cutout, library, harmony, repair, adjustments, exchange, assets];

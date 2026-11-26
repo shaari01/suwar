@@ -9,6 +9,7 @@ import { deepCloneKeepRasters } from '../core/util.js';
 import { zipSync, unzipSync, strToU8, strFromU8 } from 'fflate';
 
 export const CATEGORIES = [
+  ['sticker', 'ملصقات وصور'],
   ['person', 'أشخاص'],
   ['plant', 'أشجار ونباتات'],
   ['sky', 'سماء وغيوم'],
@@ -134,6 +135,14 @@ class LibraryPanel {
           if (!l || l.type !== 'image') return toast('اختر طبقة صورة مقصوصة أولًا', { kind: 'warn' });
           saveDialog(app, l);
         }, { testid: 'el-save' }),
+        iconBtn('sticker', 'إضافة صور', async () => {
+          const { addStickers } = await import('./assets.js');
+          const files = await pickFiles({ accept: 'image/*,.svg,.gif', multiple: true });
+          if (files.length) {
+            const n = await addStickers(app, files);
+            if (n) toast(`أُضيف ${n} إلى العناصر`, { kind: 'ok' });
+          }
+        }, { testid: 'el-add-files' }),
         iconBtn('export', 'نسخة احتياطية', () => exportLibrary(), { testid: 'el-export' }),
         iconBtn('upload', 'استيراد مكتبة', () => importLibrary(app), { testid: 'el-import' })
       ),

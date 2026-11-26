@@ -235,18 +235,31 @@ function hslEditor(app, l) {
 
 function lutEditor(app, l) {
   const p = l.params;
+  const use = (name, lut) => {
+    app.edit('مرشح LUT', () => {
+      p.lut = lut;
+      p.name = name;
+    });
+    app.emit('props-refresh');
+  };
+  // مرشحاتي المحفوظة: لمسة واحدة لتطبيقها
+  const mine = h('div', { class: 'chips', 'data-testid': 'lut-mine' });
+  import('./assets.js').then(async ({ listUserLuts }) => {
+    for (const r of await listUserLuts()) mine.append(h('button', { type: 'button', class: 'chip' + (p.name === r.name ? ' on' : ''), onclick: () => use(r.name, r.lut) }, r.name));
+  });
   return h('div', {},
-    h('p', { class: 'hint' }, p.name ? `الملف: ${p.name} (${p.lut?.size}³)` : 'لم يُحمّل ملف LUT بعد.'),
+    h('p', { class: 'hint' }, p.name ? `المرشح: ${p.name} (${p.lut?.size}³)` : 'اختر مرشحًا من «مرشحاتي» أو حمّل ملف ‎.cube.'),
+    mine,
     iconBtn('upload', 'تحميل ملف .cube', async () => {
       const [f] = await pickFiles({ accept: '.cube', multiple: false });
       if (!f) return;
       try {
         const lut = parseCube(await f.text());
-        app.edit('تحميل LUT', () => {
-          p.lut = lut;
-          p.name = f.name;
-        });
-        app.emit('props-refresh');
+        const name = f.name.replace(/\.cube$/i, '');
+        // يُحفظ تلقائيًا في «مرشحاتي» ليُستعمل لاحقًا بلمسة
+        const { saveLut } = await import('./assets.js');
+        await saveLut(name, lut);
+        use(name, lut);
       } catch (e) {
         toast(e.message, { kind: 'error' });
       }

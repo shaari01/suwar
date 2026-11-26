@@ -107,7 +107,14 @@ export function slider({ label, min = 0, max = 100, step = 1, value = 0, onInput
     setVal(initial);
     inp.dispatchEvent(new Event('change', { bubbles: true }));
   });
-  const track = h('div', { class: 'sl-track' }, inp, pad);
+  // − و + بخطوة واحدة للضبط الدقيق (مثل محرر سامسونج)
+  const nudge = (dir) => {
+    begin();
+    setVal(parseFloat(inp.value) + dir * (parseFloat(inp.step) || 1));
+    inp.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+  const pm = (dir, ic, lbl) => h('button', { type: 'button', class: 'sl-pm', 'aria-label': lbl, tabindex: -1, onclick: (e) => { e.preventDefault(); nudge(dir); } }, icon(ic, 16));
+  const track = h('div', { class: 'sl-track' }, pm(-1, 'minus', 'إنقاص'), h('div', { class: 'sl-mid' }, inp, pad), pm(1, 'plus', 'زيادة'));
   const wrap = h('div', { class: 'slider' }, h('span', { class: 'slbl' }, label), out, track);
   wrap.set = (v) => {
     inp.value = v;
