@@ -50,6 +50,15 @@ async function fixture(page, kind, w = 800, h = 600) {
       gr.addColorStop(0, '#f6b26b'); gr.addColorStop(0.6, '#8e7cc3'); gr.addColorStop(1, '#2b2b52');
       g.fillStyle = gr; g.fillRect(0, 0, w, h);
       g.fillStyle = '#1d1d3a'; g.fillRect(0, h * 0.75, w, h * 0.25);
+    } else if (kind === 'blemish') {
+      // خلفية متدرجة بنسيج خفيف وبقعة سوداء في الوسط
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const v = 120 + (x / w) * 80 + ((x * 7 + y * 13) % 11);
+        g.fillStyle = `rgb(${v},${v * 0.8},${v * 0.6})`;
+        g.fillRect(x, y, 1, 1);
+      }
+      g.fillStyle = '#000';
+      g.beginPath(); g.arc(w / 2, h / 2, 18, 0, Math.PI * 2); g.fill();
     } else if (kind === 'checker') {
       for (let y = 0; y < h; y += 50) for (let x = 0; x < w; x += 50) { g.fillStyle = ((x + y) / 50) % 2 ? '#222' : '#eee'; g.fillRect(x, y, 50, 50); }
     } else {

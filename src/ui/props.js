@@ -40,11 +40,22 @@ export class PropsPanel {
     app.on('restored', () => this.render());
     app.on('doc', () => this.render());
     app.on('props-refresh', () => this.render());
+    // نعيد البناء فقط إذا تغيّرت الأقسام الظاهرة (لا أثناء سحب المنزلقات)
+    app.on('props', () => {
+      if (this.signature() !== this._sig) this.render();
+    });
     this.render();
+  }
+
+  signature() {
+    const l = this.app.selected;
+    if (!l) return 'none';
+    return l.id + ':' + sections.filter((s) => !s.when || s.when(l, this.app)).map((s) => s.id).join(',');
   }
 
   render() {
     const app = this.app;
+    this._sig = this.signature();
     const l = app.selected;
     // نحفظ حالة فتح الأقسام
     this.el.querySelectorAll('details[data-sec]').forEach((d) => (this.openState[d.dataset.sec] = d.open));
