@@ -80,7 +80,7 @@ async function boot() {
   // ---------- التبويبات ----------
   const layersPane = h('div', { class: 'pane', 'data-pane': 'layers' });
   const propsPane = h('div', { class: 'pane', 'data-pane': 'props' });
-  new LayersPanel(app, layersPane);
+  app.layersPanel = new LayersPanel(app, layersPane);
   new PropsPanel(app, propsPane);
   sideTabs.unshift({ id: 'layers', label: 'الطبقات', icon: 'layers', el: layersPane }, { id: 'props', label: 'الخصائص', icon: 'sliders', el: propsPane });
 

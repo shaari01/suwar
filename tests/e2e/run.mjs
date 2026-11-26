@@ -73,7 +73,8 @@ async function fixture(page, kind, w = 800, h = 600) {
 
 try { (await import('node:child_process')).execSync('pkill -f "vite preview"'); } catch {}
 const server = await startServer();
-const browser = await chromium.launch();
+// لغة UTF-8 حتى تُحفظ أسماء الملفات العربية كما هي (بدونها يسمّي Chromium الملف «download»)
+const browser = await chromium.launch({ env: { ...process.env, LANG: "C.UTF-8", LC_ALL: "C.UTF-8" } });
 let failed = 0;
 const files = readdirSync(join(here, 'specs')).filter((f) => f.endsWith('.mjs') && (!only.length || only.some((o) => f.includes(o)))).sort();
 for (const f of files) {

@@ -71,6 +71,7 @@ async function rasterToRef(r, used) {
 async function serialize(v, used) {
   if (v === null || typeof v !== 'object') return v;
   if (isRaster(v)) return rasterToRef(v, used);
+  if (ArrayBuffer.isView(v)) return v; // IndexedDB تحفظ المصفوفات الرقمية مباشرة
   if (Array.isArray(v)) {
     const out = [];
     for (const x of v) out.push(await serialize(x, used));
@@ -83,6 +84,7 @@ async function serialize(v, used) {
 
 async function deserialize(v) {
   if (v === null || typeof v !== 'object') return v;
+  if (ArrayBuffer.isView(v)) return v;
   if (v.$blob) {
     const blob = await idbGet('blobs', v.$blob);
     if (!blob) return null;

@@ -212,3 +212,4 @@ input[type=color] { width: 100%; height: 46px; border: 1px solid var(--line); bo
 .dial-row { display: flex; gap: 10px; align-items: center; }
 .dial { flex-shrink: 0; cursor: grab; border-radius: 50%; background: #191b21; }
 .psec-body > div > .ibtn { background: var(--panel2); width: 100%; flex-direction: row; gap: 8px; justify-content: flex-start; padding-inline: 14px; font-size: 14px; }
+.psec-body .segmented { margin-bottom: 10px; }

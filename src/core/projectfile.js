@@ -19,6 +19,7 @@ export async function exportProjectFile(doc) {
       }
       return { $file: ids.get(v) };
     }
+    if (v instanceof Float32Array) return { $f32: Array.from(v) };
     if (Array.isArray(v)) {
       const o = [];
       for (const x of v) o.push(await ser(x));
@@ -42,6 +43,7 @@ export async function importProjectFile(blob) {
   const cache = new Map();
   async function de(v) {
     if (v === null || typeof v !== 'object') return v;
+    if (v.$f32) return Float32Array.from(v.$f32);
     if (v.$file) {
       if (!cache.has(v.$file)) {
         const { canvas } = await blobToCanvas(new Blob([files[v.$file]], { type: 'image/png' }));
